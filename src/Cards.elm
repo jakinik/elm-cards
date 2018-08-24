@@ -1,16 +1,15 @@
-module Cards
-    exposing
-        ( Suit(..)
-        , Rank(..)
-        , Card(..)
-        , fullDeck
-        , ranks
-        , suits
-        , toRank
-        , toSuit
-        , shufle
-        , isFigure
-        )
+module Cards exposing
+    ( Card(..)
+    , Rank(..)
+    , Suit(..)
+    , fullDeck
+    , isFigure
+    , ranks
+    , shuffle
+    , suits
+    , toRank
+    , toSuit
+    )
 
 import List exposing (..)
 import Random
@@ -42,7 +41,7 @@ suits =
 
 ranks : List Rank
 ranks =
-    (map LowRank (range 2 10))
+    map LowRank (range 2 10)
         ++ [ Jack, Queen, King, Ace ]
 
 
@@ -85,8 +84,8 @@ toSuit card =
             suit
 
 
-shufle : Int -> List Card -> List Card
-shufle initialSeedValue cards =
+shuffle : Int -> List Card -> List Card
+shuffle initialSeedValue cards =
     cards
         |> foldl (accumulateWithNextSeed initialSeedValue) []
         |> sortCardsByGeneratedInt

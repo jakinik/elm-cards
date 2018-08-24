@@ -27,8 +27,8 @@ type alias Model =
 
 type Msg
     = Reset
-    | Shufle Int
-    | ShufleSeed
+    | Shuffle Int
+    | ShuffleSeed
 
 
 init : flags -> ( Model, Cmd Msg )
@@ -42,11 +42,11 @@ update msg model =
         Reset ->
             ( fullDeck, Cmd.none )
 
-        Shufle initailSeedValue ->
-             ( shufle initailSeedValue model, Cmd.none )
+        Shuffle initialSeedValue ->
+             ( shuffle initialSeedValue model, Cmd.none )
 
-        ShufleSeed ->
-            ( model, Random.generate Shufle (Random.int Random.minInt Random.maxInt) )
+        ShuffleSeed ->
+            ( model, Random.generate Shuffle (Random.int Random.minInt Random.maxInt) )
 
 
 
@@ -57,7 +57,7 @@ view : Model -> Html Msg
 view model =
     div []
         [ button [ onClick Reset ] [ text "Reset" ]
-        , button [ onClick ShufleSeed ] [ text "Shufle" ]
+        , button [ onClick ShuffleSeed ] [ text "Shufle" ]
         , ul
             []
             (li [] [ text ("Number of cards: " ++ Debug.toString (List.length model)) ]

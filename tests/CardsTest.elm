@@ -59,11 +59,11 @@ fullDeckTest =
 shufleTest : Test
 shufleTest =
     describe "Test that check properties of shufle"
-        [ fuzz intRandomRange "shufle of empty deck" <| \seed -> shufle seed [] |> equalLists []
+        [ fuzz intRandomRange "shufle of empty deck" <| \seed -> shuffle seed [] |> equalLists []
         , fuzz2 intRandomRange cardFuzzer "shufle one card" <|
-            \seed card -> shufle seed [ card ] |> equalLists [ card ]
+            \seed card -> shuffle seed [ card ] |> equalLists [ card ]
         , fuzz intRandomRange "shufle of full deck retains number of cards" <|
-            \seed -> shufle seed fullDeck |> List.length |> equal 52
+            \seed -> shuffle seed fullDeck |> List.length |> equal 52
         ]
 
 
