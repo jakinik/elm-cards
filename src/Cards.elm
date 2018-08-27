@@ -6,7 +6,7 @@ module Cards
         , fullDeck
         , isFigure
         , ranks
-        , shuffle
+        , shuffleOf
         , suits
         , toRank
         , toSuit
@@ -86,40 +86,21 @@ toSuit card =
             suit
 
 
-shuffle : Random.Seed -> List Card -> List Card
-shuffle initialSeed cards =
-    cards
-        |> zipWithRandomList initialSeed
-        |> sortCardsByGeneratedInt
-        |> unzipCards
+shuffleOf : List Card -> Random.Generator (List Card)
+shuffleOf cards =
+    randomListGenerator cards |> Random.map (shuffleList cards)
 
 
-zipWithRandomList : Random.Seed -> List Card -> List ( Card, Int )
-zipWithRandomList initialSeed cards =
-    List.map2 Tuple.pair cards (
-    generateRandomList initialSeed cards)
+shuffleList : List a -> List Int -> List a
+shuffleList toShuffle randomList =
+    randomList
+        |> map2 Tuple.pair toShuffle
+        |> sortBy Tuple.second
+        |> map Tuple.first
 
 
-generateRandomList : Random.Seed -> List Card -> List Int
-generateRandomList initialSeed cards =
-    Tuple.first <|
-        Random.step
-            (randomListGenerator cards)
-            initialSeed
-
-
-randomListGenerator : List a -> List Int
+randomListGenerator : List a -> Random.Generator (List Int)
 randomListGenerator list =
     Random.list
         (List.length list)
         (Random.int Random.minInt Random.maxInt)
-
-
-sortCardsByGeneratedInt : List ( Card, Int ) -> List ( Card, Int )
-sortCardsByGeneratedInt cardsWithSeed =
-    cardsWithSeed |> sortBy Tuple.second
-
-
-unzipCards : List ( Card, Int ) -> List Card
-unzipCards cardWithSeed =
-    cardWithSeed |> List.map Tuple.first
