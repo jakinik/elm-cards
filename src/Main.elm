@@ -43,7 +43,7 @@ update msg model =
             ( fullDeck, Cmd.none )
 
         Shuffle initialSeedValue ->
-             ( shuffle initialSeedValue model, Cmd.none )
+             ( shuffle (Random.initialSeed initialSeedValue) model, Cmd.none )
 
         ShuffleSeed ->
             ( model, Random.generate Shuffle (Random.int Random.minInt Random.maxInt) )

@@ -1,17 +1,19 @@
-module Cards exposing
-    ( Card(..)
-    , Rank(..)
-    , Suit(..)
-    , fullDeck
-    , isFigure
-    , ranks
-    , shuffle
-    , suits
-    , toRank
-    , toSuit
-    )
+module Cards
+    exposing
+        ( Card(..)
+        , Rank(..)
+        , Suit(..)
+        , fullDeck
+        , isFigure
+        , ranks
+        , shuffle
+        , suits
+        , toRank
+        , toSuit
+        )
 
 import List exposing (..)
+import Tuple exposing (..)
 import Random
 
 
@@ -84,36 +86,40 @@ toSuit card =
             suit
 
 
-shuffle : Int -> List Card -> List Card
-shuffle initialSeedValue cards =
+shuffle : Random.Seed -> List Card -> List Card
+shuffle initialSeed cards =
     cards
-        |> foldl (accumulateWithNextSeed initialSeedValue) []
+        |> zipWithRandomList initialSeed
         |> sortCardsByGeneratedInt
         |> unzipCards
 
 
-unzipCards : List ( Card, ( Int, Random.Seed ) ) -> List Card
-unzipCards cardWithSeed =
-    cardWithSeed
-        |> List.map Tuple.first
+zipWithRandomList : Random.Seed -> List Card -> List ( Card, Int )
+zipWithRandomList initialSeed cards =
+    List.map2 Tuple.pair cards (
+    generateRandomList initialSeed cards)
 
 
-sortCardsByGeneratedInt : List ( Card, ( Int, Random.Seed ) ) -> List ( Card, ( Int, Random.Seed ) )
+generateRandomList : Random.Seed -> List Card -> List Int
+generateRandomList initialSeed cards =
+    Tuple.first <|
+        Random.step
+            (randomListGenerator cards)
+            initialSeed
+
+
+randomListGenerator : List a -> List Int
+randomListGenerator list =
+    Random.list
+        (List.length list)
+        (Random.int Random.minInt Random.maxInt)
+
+
+sortCardsByGeneratedInt : List ( Card, Int ) -> List ( Card, Int )
 sortCardsByGeneratedInt cardsWithSeed =
-    cardsWithSeed
-        |> sortBy (Tuple.second >> Tuple.first)
+    cardsWithSeed |> sortBy Tuple.second
 
 
-accumulateWithNextSeed : Int -> Card -> List ( Card, ( Int, Random.Seed ) ) -> List ( Card, ( Int, Random.Seed ) )
-accumulateWithNextSeed initialSeedValue card cardsWithSeed =
-    ( card, nextSeed initialSeedValue cardsWithSeed ) :: cardsWithSeed
-
-
-nextSeed : Int -> List ( Card, ( Int, Random.Seed ) ) -> ( Int, Random.Seed )
-nextSeed initialSeedValue cardsWithSeed =
-    case cardsWithSeed of
-        ( _, ( _, seed ) ) :: _ ->
-            Random.step (Random.int 0 Random.maxInt) seed
-
-        [] ->
-            ( Random.maxInt // 2, Random.initialSeed initialSeedValue )
+unzipCards : List ( Card, Int ) -> List Card
+unzipCards cardWithSeed =
+    cardWithSeed |> List.map Tuple.first
