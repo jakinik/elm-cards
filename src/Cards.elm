@@ -1,6 +1,6 @@
 module Cards
     exposing
-        ( Card(..)
+        ( Card
         , Rank(..)
         , Suit(..)
         , fullDeck
@@ -32,8 +32,8 @@ type Rank
     | LowRank Int
 
 
-type Card
-    = Card Suit Rank
+type alias Card =
+    { suit : Suit, rank : Rank }
 
 
 suits : List Suit
@@ -58,12 +58,7 @@ fullSuit suit =
 
 
 isFigure : Card -> Bool
-isFigure card =
-    isFigureRank (toRank card)
-
-
-isFigureRank : Rank -> Bool
-isFigureRank rank =
+isFigure { suit, rank } =
     case rank of
         LowRank _ ->
             False
@@ -73,17 +68,13 @@ isFigureRank rank =
 
 
 toRank : Card -> Rank
-toRank card =
-    case card of
-        Card suit rank ->
-            rank
+toRank { suit, rank } =
+    rank
 
 
 toSuit : Card -> Suit
-toSuit card =
-    case card of
-        Card suit rank ->
-            suit
+toSuit { suit, rank } =
+    suit
 
 
 shuffleOf : List Card -> Random.Generator (List Card)
