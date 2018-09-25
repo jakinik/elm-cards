@@ -6,7 +6,7 @@ import Expect exposing (..)
 import Cards exposing (..)
 import List
 import Set
-import Random exposing (minInt, maxInt)
+import Random exposing (minInt, maxInt, Generator, Seed, initialSeed)
 
 
 toRankTest : Test
@@ -56,14 +56,14 @@ fullDeckTest =
         ]
 
 
-shufleTest : Test
-shufleTest =
-    describe "Test that check properties of shufle"
-        [ fuzz intRandomRange "shufle of empty deck" <| \seed -> shuffle seed [] |> equalLists []
-        , fuzz2 intRandomRange cardFuzzer "shufle one card" <|
-            \seed card -> shuffle seed [ card ] |> equalLists [ card ]
-        , fuzz intRandomRange "shufle of full deck retains number of cards" <|
-            \seed -> shuffle seed fullDeck |> List.length |> equal 52
+shuffleTest : Test
+shuffleTest =
+    describe "Test that check properties of shuffle"
+        [ fuzz seedFuzzer "shuffle of empty deck" <| \seed -> randomValue (shuffleOf []) seed |> equalLists []
+        , fuzz2 seedFuzzer cardFuzzer "shuffle one card" <|
+            \seed card -> randomValue (shuffleOf [ card ]) seed |> equalLists [ card ]
+        , fuzz seedFuzzer "shuffle of full deck retains number of cards" <|
+            \seed -> randomValue (shuffleOf fullDeck) seed |> List.length |> equal 52
         ]
 
 
@@ -103,6 +103,9 @@ intRandomRange : Fuzzer Int
 intRandomRange =
     Fuzz.intRange Random.minInt Random.maxInt
 
+seedFuzzer : Fuzzer Random.Seed
+seedFuzzer =
+    Fuzz.map Random.initialSeed intRandomRange
 
 suitFuzzer : Fuzzer Suit
 suitFuzzer =
@@ -121,3 +124,8 @@ rankFuzzer =
 cardFuzzer : Fuzzer Card
 cardFuzzer =
     Fuzz.map2 (\suit rank -> Card suit rank) suitFuzzer rankFuzzer
+
+
+randomValue : Random.Generator a -> Seed -> a
+randomValue generator seed =
+    seed |> Random.step generator |> Tuple.first
