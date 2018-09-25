@@ -1,47 +1,19 @@
 module CardsTest exposing (..)
 
-import Test exposing (..)
-import Fuzz exposing (..)
-import Expect exposing (..)
 import Cards exposing (..)
+import Expect exposing (..)
+import Fuzz exposing (..)
 import List
+import Random exposing (Generator, Seed, initialSeed, maxInt, minInt)
 import Set
-import Random exposing (minInt, maxInt, Generator, Seed, initialSeed)
+import Test exposing (..)
 
 
-toRankTest : Test
-toRankTest =
-    describe "Ranks"
-        [ test "Ace of Spades" <|
-            \_ -> toRank (Card Spades Ace) |> equal Ace
-        , test "King of Diamonds" <|
-            \_ -> toRank (Card Diamonds King) |> equal King
-        , test "Queen of Clubs" <|
-            \_ -> toRank (Card Clubs Queen) |> equal Queen
-        , test "Jack of Hearts" <|
-            \_ -> toRank (Card Hearts Jack) |> equal Jack
-        , test "Ten of Clubs" <|
-            \_ -> toRank (Card Clubs (LowRank 10)) |> equal (LowRank 10)
-        , test "Six of Diamonds" <|
-            \_ -> toRank (Card Diamonds (LowRank 6)) |> equal (LowRank 6)
-        ]
-
-
-toSuitTest : Test
-toSuitTest =
-    describe "Suits"
-        [ test "Ace of Spades" <|
-            \_ -> toSuit (Card Spades Ace) |> equal Spades
-        , test "King of Diamonds" <|
-            \_ -> toSuit (Card Diamonds King) |> equal Diamonds
-        , test "Queen of Clubs" <|
-            \_ -> toSuit (Card Clubs Queen) |> equal Clubs
-        , test "Jack of Hearts" <|
-            \_ -> toSuit (Card Hearts Jack) |> equal Hearts
-        , test "Ten of Clubs" <|
-            \_ -> toSuit (Card Clubs (LowRank 10)) |> equal Clubs
-        , test "Six of Diamonds" <|
-            \_ -> toSuit (Card Diamonds (LowRank 6)) |> equal Diamonds
+retrievalTest : Test
+retrievalTest =
+    describe "Test retrieval"
+        [ fuzz2 suitFuzzer rankFuzzer "rank" <| \suit rank -> toRank (Card suit rank) |> equal rank
+        , fuzz2 suitFuzzer rankFuzzer "suit" <| \suit rank -> toSuit (Card suit rank) |> equal suit
         ]
 
 
@@ -72,7 +44,7 @@ countUniqueRankBySuit suit cards =
     Set.size
         (Set.fromList
             (cards
-                |> List.filter (toSuit >> ((==) suit))
+                |> List.filter (toSuit >> (==) suit)
                 |> List.map toRank
                 |> List.map
                     rankOrdinal
@@ -103,9 +75,11 @@ intRandomRange : Fuzzer Int
 intRandomRange =
     Fuzz.intRange Random.minInt Random.maxInt
 
+
 seedFuzzer : Fuzzer Random.Seed
 seedFuzzer =
     Fuzz.map Random.initialSeed intRandomRange
+
 
 suitFuzzer : Fuzzer Suit
 suitFuzzer =
