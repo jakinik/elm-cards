@@ -11,7 +11,7 @@ import Test exposing (..)
 
 retrievalTest : Test
 retrievalTest =
-    describe "Test retrieval"
+    describe "Card component retrieval"
         [ fuzz2 suitFuzzer rankFuzzer "rank" <| \suit rank -> toRank (Card suit rank) |> equal rank
         , fuzz2 suitFuzzer rankFuzzer "suit" <| \suit rank -> toSuit (Card suit rank) |> equal suit
         ]
@@ -21,54 +21,22 @@ fullDeckTest : Test
 fullDeckTest =
     describe "Full Deck"
         [ test "contains 52 cards" <| \_ -> List.length fullDeck |> equal 52
-        , test "contains 13 unique Spades" <| \_ -> countUniqueRankBySuit Spades fullDeck |> equal 13
-        , test "contains 13 unique Clubs" <| \_ -> countUniqueRankBySuit Clubs fullDeck |> equal 13
-        , test "contains 13 unique Diamonds" <| \_ -> countUniqueRankBySuit Diamonds fullDeck |> equal 13
-        , test "contains 13 unique Hearts" <| \_ -> countUniqueRankBySuit Hearts fullDeck |> equal 13
+        , fuzz cardFuzzer "contains only unique cards" <|
+            \card -> fullDeck |> List.filter ((==) card) |> List.length |> equal 1
         ]
 
 
 shuffleTest : Test
 shuffleTest =
-    describe "Test that check properties of shuffle"
+    describe "Check properties of shuffle"
         [ fuzz seedFuzzer "shuffle of empty deck" <| \seed -> randomValue (shuffleOf []) seed |> equalLists []
         , fuzz2 seedFuzzer cardFuzzer "shuffle one card" <|
             \seed card -> randomValue (shuffleOf [ card ]) seed |> equalLists [ card ]
         , fuzz seedFuzzer "shuffle of full deck retains number of cards" <|
             \seed -> randomValue (shuffleOf fullDeck) seed |> List.length |> equal 52
+        , fuzz2 seedFuzzer cardFuzzer "after shuffling deck has only unique cards" <|
+            \seed card -> randomValue (shuffleOf fullDeck) seed |> List.filter ((==) card) |> List.length |> equal 1
         ]
-
-
-countUniqueRankBySuit : Suit -> List Card -> Int
-countUniqueRankBySuit suit cards =
-    Set.size
-        (Set.fromList
-            (cards
-                |> List.filter (toSuit >> (==) suit)
-                |> List.map toRank
-                |> List.map
-                    rankOrdinal
-            )
-        )
-
-
-rankOrdinal : Rank -> Int
-rankOrdinal rank =
-    case rank of
-        Ace ->
-            14
-
-        King ->
-            13
-
-        Queen ->
-            12
-
-        Jack ->
-            11
-
-        LowRank number ->
-            number
 
 
 intRandomRange : Fuzzer Int
